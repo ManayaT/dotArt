@@ -1,0 +1,21 @@
+table {
+    border-collapse: collapse;
+    margin-left: 100px;
+    margin-top: 20px;
+}
+td {
+    width: 20px;
+    height: 20px;
+    border: solid 1px;
+}
+.clear {
+    margin-left: 100px;
+}
+input {
+    margin-top: 20px;
+    margin-left: 20px;
+    padding: 5px;
+}
+td:empty {
+    background-color: white;
+}

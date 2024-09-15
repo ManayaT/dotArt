@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <title>Webでドット絵作成</title>
+
+        <link rel="stylesheet" href="style.css">
+        <script defer src="script.js"></script>
+    </head>
+
+    <body>
+        <div>
+            <table id="dotTBL"></table>
+            <div style="margin-left: 100px">
+                n =
+                <input type="text" id="canvas-size" size="5" placeholder="20">
+                <input type="button" value="適用" onclick="resizeCanvas()">
+            </div>
+            <table id="ColorTBL">
+                <tr id="AddColorTBL"></tr>
+            </table>
+        </div>
+        <br>
+
+        <div>
+            <input type="button" class="delete" value="削除" style="margin-left: 100px" onclick="deleteColTable()">
+            <input type="checkbox" id="paint">
+            <label for="paint">塗りつぶし</label>
+        </div>
+        <br>
+
+        <span style="margin-left: 100px" >
+            色の追加 :
+        </span>
+        
+        <span>
+            <input type="text" id="input" name="SelectColor">
+        </span>
+        <br>
+
+        <div>
+            <input type="button" class="clear" value="クリア" onclick="clearTable()">
+            <input type="button" class="canvas" value=".pngに変換" onclick="ConvertCanvas()">
+            <canvas id="output" width="20px" height="20px" style="border: solid 1px;"></canvas>
+        </div>
+    
+    </body>
+</html>
