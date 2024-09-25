@@ -7,6 +7,7 @@ let canvas = document.getElementById("output");
 let context = canvas.getContext("2d"); // 二次元を指定
 
 let paint = document.getElementById('paint');
+let border = document.getElementById('border');
 
 let input = document.getElementById('input'); // 追加色入力欄
 
@@ -90,7 +91,11 @@ function colTable() { // AddColTableの初期色をセット
     }
 }
 
-const index = [[-1,0],[0,1],[1,0],[0,-1]]
+const indexBSF = [[-1,0],[0,1],[1,0],[0,-1]]
+const index = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]
+
+let borderDraw = false
+
 function dotTable() { // ドット絵を書き込む表を表示
     for (let i = 0; i < x; i++) {
         let row = dotTbl.insertRow(-1);
@@ -100,25 +105,27 @@ function dotTable() { // ドット絵を書き込む表を表示
             cell.onclick = function() { // 描画処理
                 let lookingBackgroundColor = this.style.backgroundColor;
 
-                if (lookingBackgroundColor == ColorIndex){
-                    return;
-                }
+                // 同じ色を塗ることを避けようとしたが，これはかえってバグを呼び込む可能性がある
+                // if (lookingBackgroundColor == ColorIndex){
+                //     return;
+                // }
 
                 // 一マスを着色
                 this.style.backgroundColor = ColorIndex;
 
-                if (paint.checked){ // 塗りつぶし処理
+                 // 塗りつぶし処理
+                if (paint.checked){
                     // ループ用変数の宣言
                     let queue = [];
-                    let num = index.length;
+                    let num = indexBSF.length;
                     // 現在地の取得
                     let nowRows = this.parentNode.rowIndex;
                     let nowCols = this.cellIndex;
 
                     // 現在地の上下左右を調査
                     for (let i=0; i < num; i++){
-                        let lookingRows = nowRows + index[i][0];
-                        let lookingCols = nowCols + index[i][1];
+                        let lookingRows = nowRows + indexBSF[i][0];
+                        let lookingCols = nowCols + indexBSF[i][1];
 
                         if (0 <= lookingRows && lookingRows < y){
                             if (0 <= lookingCols && lookingCols < x){
@@ -143,8 +150,8 @@ function dotTable() { // ドット絵を書き込む表を表示
 
                         // 着色したマスの上下左右を調査
                         for (let i=0; i < num; i++){
-                            let lookingRows = queueRows + index[i][0];
-                            let lookingCols = queueCols + index[i][1];
+                            let lookingRows = queueRows + indexBSF[i][0];
+                            let lookingCols = queueCols + indexBSF[i][1];
 
                             if (0 <= lookingRows && lookingRows < y){
                                 if (0 <= lookingCols && lookingCols < x){
@@ -164,6 +171,34 @@ function dotTable() { // ドット絵を書き込む表を表示
                             break;
                         }
                     }
+                
+                // 直線描画処理
+                } else if (border.checked && borderDraw){
+                    // 押した場所のテキストを「▼」にする？
+                    // 直線描画フラグをTrueにする？
+                    // border.checked && bool border なときに操作をおこなうようにする？
+
+                    this.appendChild(document.createTextNode("▲"));
+
+                    borderDraw = false
+
+                    // setTimeout(function(){
+                    //     cell.textContent = "";  // セルのテキストをクリア
+                    // }, 3000);
+
+                } else if (border.checked){
+                    // 押した場所のテキストを「▼」にする？
+                    // 直線描画フラグをTrueにする？
+                    // border.checked && bool border なときに操作をおこなうようにする？
+
+                    //console.log("now bool : " + borderDraw)
+                    borderDraw = true
+
+                    this.appendChild(document.createTextNode("▼"));
+
+                    // setTimeout(function(){
+                    //     cell.textContent = "";  // セルのテキストをクリア
+                    // }, 3000);
                 }
             }
         }
