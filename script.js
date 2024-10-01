@@ -116,11 +116,9 @@ function dotTable() { // ドット絵を書き込む表を表示
                 // 塗りつぶし処理
                 if (paint.checked){
                     fillBFS(cell, lookingBackgroundColor)
-
-                    console.log("塗りつぶし実行")
                 
                 // 直線描画処理
-                } else if (border.checked && borderDraw){
+                } else if (border.checked && !borderDraw){
                     // 押した場所のテキストを「▼」にする？
                     // 直線描画フラグをTrueにする？
                     // border.checked && bool border なときに操作をおこなうようにする？
@@ -141,7 +139,7 @@ function dotTable() { // ドット絵を書き込む表を表示
                     //     cell.textContent = "";  // セルのテキストをクリア
                     // }, 3000);
 
-                } else if (border.checked && !borderDraw){
+                } else if (border.checked && borderDraw){
                                         // 押した場所のテキストを「▼」にする？
                     // 直線描画フラグをTrueにする？
                     // border.checked && bool border なときに操作をおこなうようにする？
@@ -249,6 +247,7 @@ function clearTable() {
     for(let i = 0; i < x; i++) {
         for(let j = 0; j < y; j++) {
             dotTbl.rows[i].cells[j].style.backgroundColor = "rgb(255, 255, 255)";
+            dotTbl.rows[i].cells[j].textContent = "";
         }
     }
 
