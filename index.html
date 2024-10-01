@@ -24,10 +24,23 @@
 
         <div>
             <input type="button" class="delete" value="削除" style="margin-left: 100px" onclick="deleteColTable()">
-            <input type="checkbox" id="paint">
-            <label for="paint">塗りつぶし</label>
-            <input type="checkbox" id="border">
+        </div>
+        <div style="margin-left: 100px">
+            <!--
+            <input type="radio" id="brush">
+            <label for="brush"></label>
+            -->
+            <label><input type="radio" name="tools" id="brush" checked>筆</label>
+            <!--
+            <input type="radio" id="border">
             <label for="border">直線</label>
+            -->
+            <label><input type="radio" name="tools" id="border">直線</label>
+            <!--
+            <input type="radio" id="paint">
+            <label for="paint">塗りつぶし</label>
+            -->
+            <label><input type="radio" name="tools" id="paint">塗りつぶし</label>
         </div>
         <br>
 
@@ -36,7 +49,7 @@
         </span>
         
         <span>
-            <input type="text" id="input" name="SelectColor">
+            <input type="text" id="input" name="SelectColor" placeholder="ex: red">
         </span>
         <br>
 
