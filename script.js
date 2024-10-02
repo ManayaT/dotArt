@@ -93,15 +93,15 @@ function colTable() { // AddColTableの初期色をセット
 const indexA_star = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]
 
 let borderDraw = false;
-let coordinate_start = [];
-let coordinate_end = [];
+let coordinateStart = [];
+let coordinateEnd = [];
 function dotTable() { // ドット絵を書き込む表を表示
     for (let i = 0; i < x; i++) {
         let row = dotTbl.insertRow(-1);
         for (let j = 0; j < y; j++) {
             let cell = row.insertCell(-1);
 
-            cell.onclick = function() { // 描画処理
+            cell.addEventListener("click", function () {
                 let lookingBackgroundColor = this.style.backgroundColor;
                 this.style.backgroundColor = ColorIndex;
 
@@ -111,64 +111,47 @@ function dotTable() { // ドット絵を書き込む表を表示
                 
                 // 直線描画処理
                 } else if (border.checked && !borderDraw){
-
-                    // ループ用変数の宣言(始点の定義には必要ない)
-                    // let queue = [];
-                    // let num = indexA_star.length;
-                    // 現在地の取得
                     let nowRows = this.parentNode.rowIndex;
                     let nowCols = this.cellIndex;
 
-                    coordinate_start.push([nowRows, nowCols])
+                    coordinateStart.push([nowRows, nowCols])
 
                     borderDraw = true;
 
                     this.appendChild(document.createTextNode("▼"));
 
-                    //
-                    // 多分そもそも直線近似してやる方がいい？
-                    //
-
-
+                //
+                // 本当は，A*アルゴリズムではなく，
+                // 近似直線を求めてやる方が良い．
+                // でもA*を使ってみたかったの．
+                //
                 } else if (border.checked && borderDraw){
-                    // border.checked && bool border なときに操作をおこなうようにする？
+                    let startRows = coordinateStart[0][0];
+                    let startCols = coordinateStart[0][1];
                     let endRows = cell.parentNode.rowIndex;
                     let endCols = cell.cellIndex;
 
-                    coordinate_end.push(endRows, endCols);
-
-                    let startRows = coordinate_start[0][0];
-                    let startCols = coordinate_start[0][1];
+                    coordinateEnd.push(endRows, endCols);
                     
                     dotTbl.rows[startRows].cells[startCols].textContent = "";
-                    //cell.appendChild(document.createTextNode("▲"));
 
                     // 目標節点であった場合，着色して終了
                     if (startRows == endRows && startCols == endCols){
-                        // ここに着色処理
                         dotTbl.rows[startRows].cells[startRows].style.backgroundColor = ColorIndex;
-                        // 変数の初期化処理
-                        coordinate_start.splice(0)
-                        coordinate_end.splice(0)
+
+                        coordinateStart.splice(0);
+                        coordinateEnd.splice(0);
                         return;
                     }
 
-                    let nextCoordinate = coordinate_start;
+                    let nextCoordinate = coordinateStart;
                     let num = indexA_star.length;
-                    let distance = Number.MAX_SAFE_INTEGER;
-
-                    console.log(num)
 
                     while (true){
-
                         let [nowRows, nowCols] = nextCoordinate.shift();
+                        let distance = Number.MAX_SAFE_INTEGER;
+                        
                         dotTbl.rows[nowRows].cells[nowCols].style.backgroundColor = ColorIndex;
-
-                        console.log("n回め")
-                        console.log(distance)
-
-                        console.log(nowRows)
-                        console.log(nowCols)
 
                         // 探索の実行
                         for (let i=0; i < num; i++){
@@ -180,7 +163,6 @@ function dotTable() { // ドット絵を書き込む表を表示
                                     let temp = EuclideanD(lookingRows, endRows, lookingCols, endCols);
                                     if (distance > temp){
                                         distance = temp
-                                        //nextCoordinate = [];
                                         nextCoordinate.splice(0)
                                         nextCoordinate.push([lookingRows, lookingCols])
                                     }
@@ -188,46 +170,41 @@ function dotTable() { // ドット絵を書き込む表を表示
                             }
                         }
 
-                        // ここに着色処理
-                        //let [nextRows, nextCols] = coordinate_start.shift();
-                        //dotTbl.rows[nextRows].cells[nextCols].style.backgroundColor = ColorIndex;
-
                         if (distance == 0){
-                            coordinate_start.splice(0)
-                            coordinate_end.splice(0)
+                            coordinateStart.splice(0)
+                            coordinateEnd.splice(0)
+                            borderDraw = false;
 
                             break;
                         }
                     }
-
-
-                    
-
-
-
-                    borderDraw = false;
-
-                    // setTimeout(function(){
-                    //     cell.textContent = "";  // セルのテキストをクリア
-                    // }, 3000);
                 } else {
+                    if (borderDraw){
+                        let [startRows, startCols] = coordinateStart.shift();
+                        dotTbl.rows[startRows].cells[startCols].textContent = "";
+                    }
+
+                    coordinateStart.splice(0)
+                    coordinateEnd.splice(0)
                     borderDraw = false;
                 }
-            }
+            });
+            // 直線の予測線を実装しても良い
         }
     }
 }
 
 
-// 評価関数()
+// 評価関数f()
 function EuclideanD(x_1 = 0, x_2 = 0, y_1 = 0, y_2 = 0){
-    //let x_1, x_2, y_1, y_2;
-
     let distance = Math.sqrt( (x_1 - x_2) ** 2 + (y_1 - y_2) ** 2 );
 
-    console.log(distance);
-
     return distance;
+}
+
+
+function borderA_star(){
+
 }
 
 
@@ -259,9 +236,7 @@ function fillBFS(cell, lookingBackgroundColor){
     }
 
     while (true){
-        // キューから要素を取り出す
         let [queueRows, queueCols] = queue.shift();
-        // 一マスを着色
         dotTbl.rows[queueRows].cells[queueCols].style.backgroundColor = ColorIndex;
 
         for (let i=0; i < num; i++){
@@ -288,7 +263,7 @@ function fillBFS(cell, lookingBackgroundColor){
 }
 
 
-function resizeCanvas(){
+function resizeTable(){
     x = size.value;
     y = size.value;
 
@@ -306,17 +281,18 @@ function clearTable() {
     for(let i = 0; i < x; i++) {
         for(let j = 0; j < y; j++) {
             dotTbl.rows[i].cells[j].style.backgroundColor = "rgb(255, 255, 255)";
+            dotTbl.style.color = "gray";
             dotTbl.rows[i].cells[j].textContent = "";
         }
     }
 
-    // ConvertCanvasの初期化
+    // ConvertTableの初期化
     context.fillStyle = "rgb(255, 255, 255)";
     context.fillRect ( 0, 0, x, y);
 }
 
 
-function ConvertCanvas() { // .pngに変換
+function ConvertTable() { // .pngに変換
     canvas.setAttribute("width", x);
     canvas.setAttribute("height", y);
 
