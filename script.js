@@ -90,12 +90,11 @@ function colTable() { // AddColTableの初期色をセット
 }
 
 
-const indexBSF = [[-1,0],[0,1],[1,0],[0,-1]]
-const index = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]
+const indexA_star = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]
 
 let borderDraw = false;
-//let coordinate_1 = [];
-
+let coordinate_start = [];
+let coordinate_end = [];
 function dotTable() { // ドット絵を書き込む表を表示
     for (let i = 0; i < x; i++) {
         let row = dotTbl.insertRow(-1);
@@ -103,14 +102,7 @@ function dotTable() { // ドット絵を書き込む表を表示
             let cell = row.insertCell(-1);
 
             cell.onclick = function() { // 描画処理
-                // 引数で渡す
                 let lookingBackgroundColor = this.style.backgroundColor;
-
-                // 同じ色を塗ることを避けようとしたが，これはかえってバグを呼び込む可能性がある
-                // if (lookingBackgroundColor == ColorIndex){
-                //     return;
-                // }
-
                 this.style.backgroundColor = ColorIndex;
 
                 // 塗りつぶし処理
@@ -119,32 +111,99 @@ function dotTable() { // ドット絵を書き込む表を表示
                 
                 // 直線描画処理
                 } else if (border.checked && !borderDraw){
-                    // 押した場所のテキストを「▼」にする？
-                    // 直線描画フラグをTrueにする？
-                    // border.checked && bool border なときに操作をおこなうようにする？
 
-                    // ループ用変数の宣言
-                    let queue = [];
-                    let num = indexBSF.length;
+                    // ループ用変数の宣言(始点の定義には必要ない)
+                    // let queue = [];
+                    // let num = indexA_star.length;
                     // 現在地の取得
-                    let nowRows = cell.parentNode.rowIndex;
-                    let nowCols = cell.cellIndex;
+                    let nowRows = this.parentNode.rowIndex;
+                    let nowCols = this.cellIndex;
 
-                    //console.log("now bool : " + borderDraw)
+                    coordinate_start.push([nowRows, nowCols])
+
                     borderDraw = true;
 
                     this.appendChild(document.createTextNode("▼"));
 
-                    // setTimeout(function(){
-                    //     cell.textContent = "";  // セルのテキストをクリア
-                    // }, 3000);
+                    //
+                    // 多分そもそも直線近似してやる方がいい？
+                    //
+
 
                 } else if (border.checked && borderDraw){
-                                        // 押した場所のテキストを「▼」にする？
-                    // 直線描画フラグをTrueにする？
                     // border.checked && bool border なときに操作をおこなうようにする？
+                    let endRows = cell.parentNode.rowIndex;
+                    let endCols = cell.cellIndex;
 
-                    this.appendChild(document.createTextNode("▲"));
+                    coordinate_end.push(endRows, endCols);
+
+                    let startRows = coordinate_start[0][0];
+                    let startCols = coordinate_start[0][1];
+                    
+                    dotTbl.rows[startRows].cells[startCols].textContent = "";
+                    //cell.appendChild(document.createTextNode("▲"));
+
+                    // 目標節点であった場合，着色して終了
+                    if (startRows == endRows && startCols == endCols){
+                        // ここに着色処理
+                        dotTbl.rows[startRows].cells[startRows].style.backgroundColor = ColorIndex;
+                        // 変数の初期化処理
+                        coordinate_start.splice(0)
+                        coordinate_end.splice(0)
+                        return;
+                    }
+
+                    let nextCoordinate = coordinate_start;
+                    let num = indexA_star.length;
+                    let distance = Number.MAX_SAFE_INTEGER;
+
+                    console.log(num)
+
+                    while (true){
+
+                        let [nowRows, nowCols] = nextCoordinate.shift();
+                        dotTbl.rows[nowRows].cells[nowCols].style.backgroundColor = ColorIndex;
+
+                        console.log("n回め")
+                        console.log(distance)
+
+                        console.log(nowRows)
+                        console.log(nowCols)
+
+                        // 探索の実行
+                        for (let i=0; i < num; i++){
+                            let lookingRows = nowRows + indexA_star[i][0];
+                            let lookingCols = nowCols + indexA_star[i][1];
+                    
+                            if (0 <= lookingRows && lookingRows < y){
+                                if (0 <= lookingCols && lookingCols < x){
+                                    let temp = EuclideanD(lookingRows, endRows, lookingCols, endCols);
+                                    if (distance > temp){
+                                        distance = temp
+                                        //nextCoordinate = [];
+                                        nextCoordinate.splice(0)
+                                        nextCoordinate.push([lookingRows, lookingCols])
+                                    }
+                                }
+                            }
+                        }
+
+                        // ここに着色処理
+                        //let [nextRows, nextCols] = coordinate_start.shift();
+                        //dotTbl.rows[nextRows].cells[nextCols].style.backgroundColor = ColorIndex;
+
+                        if (distance == 0){
+                            coordinate_start.splice(0)
+                            coordinate_end.splice(0)
+
+                            break;
+                        }
+                    }
+
+
+                    
+
+
 
                     borderDraw = false;
 
@@ -161,18 +220,18 @@ function dotTable() { // ドット絵を書き込む表を表示
 
 
 // 評価関数()
-function EuclideanD(x_1 = 0, x_2 = 5, y_1 = 0, y_2 = 6){
+function EuclideanD(x_1 = 0, x_2 = 0, y_1 = 0, y_2 = 0){
     //let x_1, x_2, y_1, y_2;
 
-    let distance = Math.sqrt( (x_1 - x_2) ** 2 + (y_1 - y_2) ** 2 )
+    let distance = Math.sqrt( (x_1 - x_2) ** 2 + (y_1 - y_2) ** 2 );
 
-    console.log(distance)
-    console.log(Math.sqrt(61))
+    console.log(distance);
 
     return distance;
 }
 
 
+const indexBSF = [[-1,0],[0,1],[1,0],[0,-1]]
 function fillBFS(cell, lookingBackgroundColor){
     // ループ用変数の宣言
     let queue = [];
