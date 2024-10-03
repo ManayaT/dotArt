@@ -1,16 +1,18 @@
-let dotTbl = document.getElementById("dotTBL");
-let size = document.getElementById('canvas-size') // キャンバスのサイズを変更
+const dotTbl = document.getElementById("dotTBL");
+const size = document.getElementById('canvas-size') // キャンバスのサイズを変更
         
-let ColTbl = document.getElementById("ColorTBL");
-let AddColorTbl = document.getElementById("AddColorTBL");
+const ColTbl = document.getElementById("ColorTBL");
+const AddColorTbl = document.getElementById("AddColorTBL");
+const colInfo = document.getElementById("now-color");
 
-let canvas = document.getElementById("output");
-let context = canvas.getContext("2d"); // 二次元を指定
+const canvas = document.getElementById("output");
+const context = canvas.getContext("2d"); // 二次元を指定
 
-let paint = document.getElementById('paint');
-let border = document.getElementById('border');
+const paint = document.getElementById('paint');
+const border = document.getElementById('border');
+const borderA_ster = document.getElementById('A-star');
 
-let input = document.getElementById('input'); // 追加色入力欄
+const input = document.getElementById('input'); // 追加色入力欄
 
 
 input.addEventListener('input', function (event) {
@@ -20,7 +22,7 @@ input.addEventListener('input', function (event) {
 
 
 let addColor;
-let ColorIndex;
+let colorIndex;
 function AddColTable() {
     // 入力された色のRGB値を取得
     let addColorRGB = getColorRGB(addColor);
@@ -41,10 +43,9 @@ function AddColTable() {
 
     // セルのクリックイベントを設定
     cell.onclick = function() {
-        ColorIndex = this.style.backgroundColor;
-        console.log("現在の色は" + ColorIndex);
+        colorIndex = this.style.backgroundColor;
+        colInfo.textContent = "現在の色は : " + colorIndex;
     }
-
     console.log(`新しい色なので追加します...`);
 }
 
@@ -70,7 +71,7 @@ function deleteColTable() {
         let getStyle = getComputedStyle(ColTbl.rows[0].cells[i]);
         let BeforeColInfo = getStyle.backgroundColor;
 
-        if(BeforeColInfo == ColorIndex) {
+        if(BeforeColInfo == colorIndex) {
             ColTbl.rows[0].deleteCell(i);
             return;
         }
@@ -78,14 +79,18 @@ function deleteColTable() {
 }
 
 
-let BaseColorTable = [ "rgb(0, 0, 0)", "rgb(255, 255, 255)"];
+let BaseColorTable = ["rgb(0,0,0)", "rgb(255,255,255)"];
 function colTable() { // AddColTableの初期色をセット
     for (let i = 0; i < BaseColorTable.length; i++) {
         let cell = ColTbl.rows[0].insertCell(-1);
-        cell.style.backgroundColor = BaseColorTable[i];
+        colInfo.textContent = "現在の色は : " + colorIndex;
+
         cell.onclick = function() {
-            ColorIndex = this.style.backgroundColor;
+            colInfo.textContent = "現在の色は : " + BaseColorTable[i];
+            colorIndex = BaseColorTable[i];
         }
+
+        cell.style.backgroundColor = getColorRGB(BaseColorTable[i]);
     }
 }
 
@@ -98,25 +103,20 @@ function dotTable() { // ドット絵を書き込む表を表示
 
             cell.addEventListener("click", function () {
                 let lookingBackgroundColor = this.style.backgroundColor;
-                this.style.backgroundColor = ColorIndex;
+                this.style.backgroundColor = colorIndex;
 
                 // 塗りつぶし処理
                 if (paint.checked){
                     fillBFS(cell, lookingBackgroundColor);
                     resetBorderFlag();
                 // 直線描画処理
-                } else if (border.checked && !borderDraw){
-                    borderA_starInitial(cell);
+                } else if ((border.checked || borderA_ster.checked) && !borderDraw){
+                    console.log("HelloWorld")
+                    borderInitial(cell);
                 } else if (border.checked && borderDraw){
-                    //
-                    // 本当は，A*アルゴリズムではなく，
-                    // ブレゼンハムでやる方が良い．
-                    // でもA*を使ってみたかったの．
-                    //
-                    //borderA_star(cell);
-
                     borderBresenham(cell);
-                    
+                } else if (borderA_ster.checked && borderDraw) {
+                    borderA_star(cell);
                 } else {
                     resetBorderFlag();
                 }
@@ -153,7 +153,7 @@ function borderBresenham(cell){
     err = dx - dy;
 
     while (true){
-        dotTbl.rows[startRows].cells[startCols].style.backgroundColor = ColorIndex;
+        dotTbl.rows[startRows].cells[startCols].style.backgroundColor = colorIndex;
 
         if (startCols == endCols && startRows == endRows){
             resetBorderFlag();
@@ -185,7 +185,7 @@ function EuclideanD(x_1 = 0, x_2 = 0, y_1 = 0, y_2 = 0){
 
 let borderDraw = false;
 let coordinateStart = [];
-function borderA_starInitial(cell){
+function borderInitial(cell){
     let nowRows = cell.parentNode.rowIndex;
     let nowCols = cell.cellIndex;
 
@@ -222,7 +222,7 @@ function borderA_star(cell){
         let [nowRows, nowCols] = nextCoordinate.shift();
         let distance = Number.MAX_SAFE_INTEGER;
         
-        dotTbl.rows[nowRows].cells[nowCols].style.backgroundColor = ColorIndex;
+        dotTbl.rows[nowRows].cells[nowCols].style.backgroundColor = colorIndex;
 
         // 探索の実行
         for (let i=0; i < num; i++){
@@ -291,7 +291,7 @@ function fillBFS(cell, lookingBackgroundColor){
 
     while (true){
         let [queueRows, queueCols] = queue.shift();
-        dotTbl.rows[queueRows].cells[queueCols].style.backgroundColor = ColorIndex;
+        dotTbl.rows[queueRows].cells[queueCols].style.backgroundColor = colorIndex;
 
         for (let i=0; i < num; i++){
             let lookingRows = queueRows + indexBSF[i][0];
@@ -310,7 +310,6 @@ function fillBFS(cell, lookingBackgroundColor){
         }
 
         if (!queue.length){
-            console.log(`塗りつぶし完了`);
             break;
         }
     }
@@ -363,7 +362,7 @@ function ConvertTable() { // .pngに変換
 let x, y;
 window.onload = function() {
     x = 20, y = 20;
-    ColorIndex = "rgb( 0, 0, 0)";
+    colorIndex = "rgb( 0, 0, 0)";
     dotTable();
     colTable();
     clearTable();
