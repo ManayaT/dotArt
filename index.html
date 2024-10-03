@@ -4,8 +4,8 @@
         <meta charset="utf-8">
         <title>Webでドット絵作成</title>
 
-        <link rel="stylesheet" href="style.css">
-        <script defer src="script.js"></script>
+        <link rel="stylesheet" href="./style.css">
+        <script defer src="./script.js"></script>
     </head>
 
     <body>
@@ -24,8 +24,11 @@
 
         <div>
             <input type="button" class="delete" value="削除" style="margin-left: 100px" onclick="deleteColTable()">
-            <input type="checkbox" id="paint">
-            <label for="paint">塗りつぶし</label>
+        </div>
+        <div style="margin-left: 100px">
+            <label><input type="radio" name="tools" id="brush" checked>筆</label>
+            <label><input type="radio" name="tools" id="border">直線</label>
+            <label><input type="radio" name="tools" id="paint">塗りつぶし</label>
         </div>
         <br>
 
@@ -34,7 +37,7 @@
         </span>
         
         <span>
-            <input type="text" id="input" name="SelectColor">
+            <input type="text" id="input" name="SelectColor" placeholder="ex: red">
         </span>
         <br>
 
