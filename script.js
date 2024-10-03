@@ -90,11 +90,6 @@ function colTable() { // AddColTableの初期色をセット
 }
 
 
-const indexA_star = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]
-
-let borderDraw = false;
-let coordinateStart = [];
-let coordinateEnd = [];
 function dotTable() { // ドット絵を書き込む表を表示
     for (let i = 0; i < x; i++) {
         let row = dotTbl.insertRow(-1);
@@ -107,89 +102,74 @@ function dotTable() { // ドット絵を書き込む表を表示
 
                 // 塗りつぶし処理
                 if (paint.checked){
-                    fillBFS(cell, lookingBackgroundColor)
-                
+                    fillBFS(cell, lookingBackgroundColor);
+                    resetBorderFlag();
                 // 直線描画処理
                 } else if (border.checked && !borderDraw){
-                    let nowRows = this.parentNode.rowIndex;
-                    let nowCols = this.cellIndex;
-
-                    coordinateStart.push([nowRows, nowCols])
-
-                    borderDraw = true;
-
-                    this.appendChild(document.createTextNode("▼"));
-
-                //
-                // 本当は，A*アルゴリズムではなく，
-                // 近似直線を求めてやる方が良い．
-                // でもA*を使ってみたかったの．
-                //
+                    borderA_starInitial(cell);
                 } else if (border.checked && borderDraw){
-                    let startRows = coordinateStart[0][0];
-                    let startCols = coordinateStart[0][1];
-                    let endRows = cell.parentNode.rowIndex;
-                    let endCols = cell.cellIndex;
+                    //
+                    // 本当は，A*アルゴリズムではなく，
+                    // ブレゼンハムでやる方が良い．
+                    // でもA*を使ってみたかったの．
+                    //
+                    //borderA_star(cell);
 
-                    coordinateEnd.push(endRows, endCols);
+                    borderBresenham(cell);
                     
-                    dotTbl.rows[startRows].cells[startCols].textContent = "";
-
-                    // 目標節点であった場合，着色して終了
-                    if (startRows == endRows && startCols == endCols){
-                        dotTbl.rows[startRows].cells[startRows].style.backgroundColor = ColorIndex;
-
-                        coordinateStart.splice(0);
-                        coordinateEnd.splice(0);
-                        return;
-                    }
-
-                    let nextCoordinate = coordinateStart;
-                    let num = indexA_star.length;
-
-                    while (true){
-                        let [nowRows, nowCols] = nextCoordinate.shift();
-                        let distance = Number.MAX_SAFE_INTEGER;
-                        
-                        dotTbl.rows[nowRows].cells[nowCols].style.backgroundColor = ColorIndex;
-
-                        // 探索の実行
-                        for (let i=0; i < num; i++){
-                            let lookingRows = nowRows + indexA_star[i][0];
-                            let lookingCols = nowCols + indexA_star[i][1];
-                    
-                            if (0 <= lookingRows && lookingRows < y){
-                                if (0 <= lookingCols && lookingCols < x){
-                                    let temp = EuclideanD(lookingRows, endRows, lookingCols, endCols);
-                                    if (distance > temp){
-                                        distance = temp
-                                        nextCoordinate.splice(0)
-                                        nextCoordinate.push([lookingRows, lookingCols])
-                                    }
-                                }
-                            }
-                        }
-
-                        if (distance == 0){
-                            coordinateStart.splice(0)
-                            coordinateEnd.splice(0)
-                            borderDraw = false;
-
-                            break;
-                        }
-                    }
                 } else {
-                    if (borderDraw){
-                        let [startRows, startCols] = coordinateStart.shift();
-                        dotTbl.rows[startRows].cells[startCols].textContent = "";
-                    }
-
-                    coordinateStart.splice(0)
-                    coordinateEnd.splice(0)
-                    borderDraw = false;
+                    resetBorderFlag();
                 }
             });
             // 直線の予測線を実装しても良い
+        }
+    }
+}
+
+
+function borderBresenham(cell){
+    let startRows = coordinateStart[0][0];
+    let startCols = coordinateStart[0][1];
+    let endRows = cell.parentNode.rowIndex;
+    let endCols = cell.cellIndex;
+
+    dx = Math.abs(endCols - startCols);
+    dy = Math.abs(endRows - startRows);
+
+    let sx = 0;
+    let sy = 0;
+
+    if (startCols < endCols){
+        sx = 1;
+    } else {
+        sx = -1;
+    }
+    if (startRows < endRows){
+        sy = 1;
+    } else {
+        sy = -1;
+    }
+
+    err = dx - dy;
+
+    while (true){
+        dotTbl.rows[startRows].cells[startCols].style.backgroundColor = ColorIndex;
+
+        if (startCols == endCols && startRows == endRows){
+            resetBorderFlag();
+            
+            return;
+        }
+
+        e2 = 2 * err;
+
+        if (e2 > -dy){
+            err -= dy;
+            startCols += sx;
+        }
+        if (e2 < dx){
+            err += dx;
+            startRows += sy;
         }
     }
 }
@@ -203,8 +183,82 @@ function EuclideanD(x_1 = 0, x_2 = 0, y_1 = 0, y_2 = 0){
 }
 
 
-function borderA_star(){
+let borderDraw = false;
+let coordinateStart = [];
+function borderA_starInitial(cell){
+    let nowRows = cell.parentNode.rowIndex;
+    let nowCols = cell.cellIndex;
 
+    coordinateStart.push([nowRows, nowCols]);
+
+    borderDraw = true;
+
+    cell.appendChild(document.createTextNode("▼"));
+}
+
+
+const indexA_star = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]
+let coordinateEnd = [];
+function borderA_star(cell){
+    let startRows = coordinateStart[0][0];
+    let startCols = coordinateStart[0][1];
+    let endRows = cell.parentNode.rowIndex;
+    let endCols = cell.cellIndex;
+
+    coordinateEnd.push(endRows, endCols);
+
+    // 目標節点であった場合，着色して終了
+    if (startRows == endRows && startCols == endCols){
+        resetBorderFlag();
+
+        return;
+    }
+
+    // deepCopy
+    let nextCoordinate = structuredClone(coordinateStart);
+    let num = indexA_star.length;
+
+    while (true){
+        let [nowRows, nowCols] = nextCoordinate.shift();
+        let distance = Number.MAX_SAFE_INTEGER;
+        
+        dotTbl.rows[nowRows].cells[nowCols].style.backgroundColor = ColorIndex;
+
+        // 探索の実行
+        for (let i=0; i < num; i++){
+            let lookingRows = nowRows + indexA_star[i][0];
+            let lookingCols = nowCols + indexA_star[i][1];
+    
+            if (0 <= lookingRows && lookingRows < y){
+                if (0 <= lookingCols && lookingCols < x){
+                    let temp = EuclideanD(lookingRows, endRows, lookingCols, endCols);
+                    if (distance > temp){
+                        distance = temp;
+                        nextCoordinate.splice(0);
+                        nextCoordinate.push([lookingRows, lookingCols]);
+                    }
+                }
+            }
+        }
+
+        if (distance == 0){
+            resetBorderFlag();
+
+            return;
+        }
+    }
+}
+
+
+function resetBorderFlag(){
+    if (borderDraw){
+        let [startRows, startCols] = coordinateStart.shift();
+        dotTbl.rows[startRows].cells[startCols].textContent = "";
+    }
+
+    coordinateStart.splice(0)
+    coordinateEnd.splice(0)
+    borderDraw = false;
 }
 
 
