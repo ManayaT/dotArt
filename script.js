@@ -3,7 +3,7 @@ const size = document.getElementById('canvas-size') // キャンバスのサイ�
         
 const ColTbl = document.getElementById("ColorTBL");
 const AddColorTbl = document.getElementById("AddColorTBL");
-const colInfo = document.getElementById("now-color");
+const colInfo = document.getElementById("nowColor");
 
 const canvas = document.getElementById("output");
 const context = canvas.getContext("2d"); // 二次元を指定
@@ -27,7 +27,6 @@ function AddColTable() {
     // 入力された色のRGB値を取得
     let addColorRGB = getColorRGB(addColor);
 
-    // パレット内を走査
     for (let i = 0, colLen = ColTbl.rows[0].cells.length; i < colLen; i++) {
         let existingCell = ColTbl.rows[0].cells[i];
         let existingColorRGB = getComputedStyle(existingCell).backgroundColor;
@@ -50,7 +49,6 @@ function AddColTable() {
 }
 
 
-// 入力をRGBに変換
 function getColorRGB(colorName) {
     const div = document.createElement("div");
     div.style.color = colorName;
@@ -111,7 +109,6 @@ function dotTable() { // ドット絵を書き込む表を表示
                     resetBorderFlag();
                 // 直線描画処理
                 } else if ((border.checked || borderA_ster.checked) && !borderDraw){
-                    console.log("HelloWorld")
                     borderInitial(cell);
                 } else if (border.checked && borderDraw){
                     borderBresenham(cell);
@@ -124,6 +121,32 @@ function dotTable() { // ドット絵を書き込む表を表示
             // 直線の予測線を実装しても良い
         }
     }
+}
+
+
+let borderDraw = false;
+let coordinateStart = [];
+function borderInitial(cell){
+    let nowRows = cell.parentNode.rowIndex;
+    let nowCols = cell.cellIndex;
+
+    coordinateStart.push([nowRows, nowCols]);
+
+    borderDraw = true;
+
+    cell.appendChild(document.createTextNode("▼"));
+}
+
+
+function resetBorderFlag(){
+    if (borderDraw){
+        let [startRows, startCols] = coordinateStart.shift();
+        dotTbl.rows[startRows].cells[startCols].textContent = "";
+    }
+
+    coordinateStart.splice(0)
+    coordinateEnd.splice(0)
+    borderDraw = false;
 }
 
 
@@ -172,28 +195,6 @@ function borderBresenham(cell){
             startRows += sy;
         }
     }
-}
-
-
-// 評価関数f()
-function EuclideanD(x_1 = 0, x_2 = 0, y_1 = 0, y_2 = 0){
-    let distance = Math.sqrt( (x_1 - x_2) ** 2 + (y_1 - y_2) ** 2 );
-
-    return distance;
-}
-
-
-let borderDraw = false;
-let coordinateStart = [];
-function borderInitial(cell){
-    let nowRows = cell.parentNode.rowIndex;
-    let nowCols = cell.cellIndex;
-
-    coordinateStart.push([nowRows, nowCols]);
-
-    borderDraw = true;
-
-    cell.appendChild(document.createTextNode("▼"));
 }
 
 
@@ -250,15 +251,11 @@ function borderA_star(cell){
 }
 
 
-function resetBorderFlag(){
-    if (borderDraw){
-        let [startRows, startCols] = coordinateStart.shift();
-        dotTbl.rows[startRows].cells[startCols].textContent = "";
-    }
+// 評価関数f()
+function EuclideanD(x_1 = 0, x_2 = 0, y_1 = 0, y_2 = 0){
+    let distance = Math.sqrt( (x_1 - x_2) ** 2 + (y_1 - y_2) ** 2 );
 
-    coordinateStart.splice(0)
-    coordinateEnd.splice(0)
-    borderDraw = false;
+    return distance;
 }
 
 
@@ -345,7 +342,7 @@ function clearTable() {
 }
 
 
-function ConvertTable() { // .pngに変換
+function convertTable() { // .pngに変換
     canvas.setAttribute("width", x);
     canvas.setAttribute("height", y);
 

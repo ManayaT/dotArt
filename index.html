@@ -3,50 +3,54 @@
     <head>
         <meta charset="utf-8">
         <title>Webでドット絵作成</title>
-        <link rel="icon" href="">
+        <link rel="icon" href="./imeges/icon.png">
         <link rel="stylesheet" href="./style.css">
         <script defer src="./script.js"></script>
     </head>
 
     <body>
         <div>
-            <table id="dotTBL"></table>
-            <div style="margin-left: 100px">
-                n =
-                <input type="text" id="canvas-size" size="5" placeholder="20">
-                <input type="button" value="適用" onclick="resizeTable()">
+            <div id="drawArea">
+                <table id="dotTBL"></table>
+                <div>
+                    n =
+                    <input type="text" id="canvas-size" size="5" placeholder="20">
+                    <input type="button" value="適用" onclick="resizeTable()">
+                </div>
             </div>
+
+            <div id="palette">
+                <p id="nowColor"></p>
             <table id="ColorTBL">
                 <tr id="AddColorTBL"></tr>
-                <p id="now-color" style="margin-left: 100px"></p>
             </table>
+                <input type="button" class="delete" value="削除" onclick="deleteColTable()">
+            </div>
+        </div>
+        <br>
+
+        <div id="tools">
+            <div>
+                <label><input type="radio" name="tools" id="brush" checked>筆</label>
+                <label><input type="radio" name="tools" id="border">直線</label>
+                <label><input type="radio" name="tools" id="paint">塗りつぶし</label>
+                <label><input type="radio" name="tools" id="A-star">A*</label>
+            </div>
+            <br>
+
+            <span>
+                色の追加 :
+            </span>
             
+            <span>
+                <input type="text" id="input" name="SelectColor" placeholder="ex: red">
+            </span>
+            <br>
         </div>
-        <br>
 
-        <div>
-            <input type="button" class="delete" value="削除" style="margin-left: 100px" onclick="deleteColTable()">
-        </div>
-        <div style="margin-left: 100px">
-            <label><input type="radio" name="tools" id="brush" checked>筆</label>
-            <label><input type="radio" name="tools" id="border">直線</label>
-            <label><input type="radio" name="tools" id="paint">塗りつぶし</label>
-            <label><input type="radio" name="tools" id="A-star">A*</label>
-        </div>
-        <br>
-
-        <span style="margin-left: 100px" >
-            色の追加 :
-        </span>
-        
-        <span>
-            <input type="text" id="input" name="SelectColor" placeholder="ex: red">
-        </span>
-        <br>
-
-        <div>
+        <div id="buttons">
             <input type="button" class="clear" value="クリア" onclick="clearTable()">
-            <input type="button" class="canvas" value=".pngに変換" onclick="ConvertTable()">
+            <input type="button" class="canvas" value=".pngに変換" onclick="convertTable()">
             <canvas id="output" width="20px" height="20px" style="border: solid 1px;"></canvas>
         </div>
     
